@@ -13,9 +13,9 @@ import java.util.Map;
 @Service
 public class AIanalysisService {
     //added this to secure the API key info.
-    @Value("${ai.api.key}")
+    @Value("${groq.api.key}")
     private String apiKey;
-    private final String aiApiUrl = "https://api.openai.com/v1/completions";
+    private final String groqApiUrl = "https://api.groq.com/openai/v1/chat/completions";
 
     private final RestTemplate restTemplate;
 
@@ -32,11 +32,11 @@ public class AIanalysisService {
 
         // JSON format
         String requestBody = "{"
-        + "\"model\": \"gpt-3.5-turbo\", " // Update the model
-        + "\"messages\": [{\"role\": \"system\", \"content\": \"You are an AI resume analyst.\"},"
-        + "{\"role\": \"user\", \"content\": \"" + escapeJSON(resumeText) + "\"}],"
-        + "\"max_tokens\": 500"
-        + "}";
+                + "\"model\": \"llama-3.3-70b-versatile\", "  
+                + "\"messages\": [{\"role\": \"system\", \"content\": \"You are an AI resume analyst.\"},"
+                + "{\"role\": \"user\", \"content\": \"" + escapeJSON(resumeText) + "\"}],"
+                + "\"max_tokens\": 500"
+                + "}";
 
 
         HttpEntity<String> entity = new HttpEntity<>(requestBody, headers);
@@ -44,10 +44,10 @@ public class AIanalysisService {
         //Make API req and return the response body
         // return message instead of error
          try { 
-            ResponseEntity<String> response = restTemplate.exchange(aiApiUrl, HttpMethod.POST, entity, String.class);
+            ResponseEntity<String> response = restTemplate.exchange(groqApiUrl, HttpMethod.POST, entity, String.class);
             return response.getBody();
         } catch (Exception e) {
-            return "Error calling OpenAI api: " + e.getMessage();
+            return "Error calling Groq api: " + e.getMessage();
         }
 
     }
