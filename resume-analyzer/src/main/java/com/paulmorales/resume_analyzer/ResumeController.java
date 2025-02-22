@@ -7,6 +7,7 @@ import org.springframework.http.ResponseEntity; // used to send responses with H
 
 @RestController
 @RequestMapping("/api/resume")
+@CrossOrigin(origins = "http://localhost:3000") // allowing CORS in react
 public class ResumeController {
 
     @PostMapping("/upload") // creating HTTP POST endpoint for upload
