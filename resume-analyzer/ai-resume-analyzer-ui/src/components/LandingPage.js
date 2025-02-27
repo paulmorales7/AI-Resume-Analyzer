@@ -1,4 +1,4 @@
-import react, {useState} from 'react';
+import React, {useState} from 'react';
 import styles from './LandingPage.module.css';
 
 const LandingPage = ({ onContinue }) => {
@@ -12,9 +12,9 @@ const LandingPage = ({ onContinue }) => {
     }
 
     return (
-        <div style={styles.container}>
+        <div className={styles.landingContainer}>
           <h1>Welcome to the AI Resume Analyzer!</h1>
-          <form onSubmit={handleSubmit} style={styles.form}>
+          <form onSubmit={handleSubmit} className={styles.landingForm}>
             <input
               type="text"
               placeholder="Enter your name"
@@ -22,7 +22,7 @@ const LandingPage = ({ onContinue }) => {
               onChange={(e) => setName(e.target.value)}
               style={styles.input}
             />
-            <button type="submit" style={styles.button}>Continue</button>
+            <button type="submit" className={styles.landingButton}>Continue</button>
           </form>
         </div>
       );
