@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
+import styles from './ResumeUpload.module.css';
 
 const ResumeUpload = ({ onUpload }) => {
     const [selectedFile, setSelectedFile] = useState(null);
     const [uploadStatus, setUploadStatus] = useState('');
+    const [jobPosting, setJobPosting] = useState('');
 
     const handleFileChange = (e) => {
         // targeting the first file selected by user
@@ -54,6 +56,12 @@ const ResumeUpload = ({ onUpload }) => {
               </form>
               {/* Display the upload status if available */}
               {uploadStatus && <p>{uploadStatus}</p>}
+              <textarea
+                    placeholder="Paste the job posting here..."
+                    value={jobPosting}
+                    onChange={(e) => setJobPosting(e.target.value)}
+                    className={styles.uploadTextArea}
+                />
             </div>
           );
         };

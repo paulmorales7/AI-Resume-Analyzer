@@ -1,0 +1,11 @@
+.uploadTextArea {
+    width: 100%;
+    max-width: 500px;
+    height: 150px;
+    padding: 10px;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    resize: vertical; /* Allows user to expand it */
+    margin-top: 100px;
+}

@@ -5,6 +5,7 @@ import bgImage from '../assets/aiBG.jpg';
 const LandingPage = ({ onContinue }) => {
     const [name, setName] = useState('');
 
+
     const handleSubmit = (e) => {
         e.preventDefault();
         if (name.trim()) {
@@ -26,6 +27,7 @@ const LandingPage = ({ onContinue }) => {
               onChange={(e) => setName(e.target.value)}
               className={styles.landingInput}
             />
+          
             <button type="submit" className={styles.landingButton}>Continue</button>
           </form>
         </div>
