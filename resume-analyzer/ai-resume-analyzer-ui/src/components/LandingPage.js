@@ -1,5 +1,6 @@
 import React, {useState} from 'react';
 import styles from './LandingPage.module.css';
+import bgImage from '../assets/aiBG.jpg';
 
 const LandingPage = ({ onContinue }) => {
     const [name, setName] = useState('');
@@ -12,7 +13,10 @@ const LandingPage = ({ onContinue }) => {
     }
 
     return (
-        <div className={styles.landingContainer}>
+        <div 
+          className={styles.landingContainer}
+          style={{bgImage: `url(${bgImage})`}}
+        >
           <h1>Welcome to the AI Resume Analyzer!</h1>
           <form onSubmit={handleSubmit} className={styles.landingForm}>
             <input
@@ -20,7 +24,7 @@ const LandingPage = ({ onContinue }) => {
               placeholder="Enter your name"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              style={styles.input}
+              className={styles.landingInput}
             />
             <button type="submit" className={styles.landingButton}>Continue</button>
           </form>
