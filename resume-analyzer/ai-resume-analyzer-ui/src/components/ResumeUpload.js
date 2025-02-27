@@ -47,15 +47,29 @@ const ResumeUpload = ({ onUpload }) => {
         return (
             <div style={{ textAlign: 'center', marginTop: '20px' }}>
               <h2>Upload Your Resume</h2>
+
               <form onSubmit={handleSubmit}>
                 {/* File input: calls handleFileChange when the user selects a file */}
-                <input type="file" onChange={handleFileChange} accept=".pdf,.doc,.docx" />
+                <label htmlFor="file-upload" className={styles.customFileUpload}>
+                    {selectedFile ? selectedFile.name : 'Choose File'}
+                </label>
+                <input 
+                type="file" 
+                onChange={handleFileChange} 
+                accept=".pdf,.doc,.docx" 
+                id="file-upload"
+                style={{ display: 'none' }}
+                />
                 <br /><br />
                 {/* Submit button to trigger the file upload */}
                 <button type="submit">Upload</button>
               </form>
+
+
               {/* Display the upload status if available */}
               {uploadStatus && <p>{uploadStatus}</p>}
+
+
               <textarea
                     placeholder="Paste the job posting here..."
                     value={jobPosting}
