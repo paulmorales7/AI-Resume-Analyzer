@@ -5,6 +5,7 @@ const ResumeUpload = ({ onUpload }) => {
     const [selectedFile, setSelectedFile] = useState(null);
     const [uploadStatus, setUploadStatus] = useState('');
     const [jobPosting, setJobPosting] = useState('');
+    const [results, setResults] = useState(null);
 
     const handleFileChange = (e) => {
         // targeting the first file selected by user
@@ -22,6 +23,7 @@ const ResumeUpload = ({ onUpload }) => {
 
         const formData = new FormData();
         formData.append('file', selectedFile);
+        formData.append('jobPosting', jobPosting);
 
         try {
             const response = await fetch (
@@ -31,10 +33,17 @@ const ResumeUpload = ({ onUpload }) => {
                 body: formData
                 });
 
-                const data = await response.text();
+                const data = await response.json();
 
-                setUploadStatus(data);
+                if (response.ok) {
+                  setUploadStatus("Resume successfully analyzed");
+                  setResults(data);
+                } else {
+                  setUploadStatus(data.error || "Error analyzing resume.")
+                }
+              
 
+               
                 if (onUpload) {
                     // only if data from upload is provided is res passed back
                     onUpload(data);
@@ -58,28 +67,52 @@ const ResumeUpload = ({ onUpload }) => {
                 onChange={handleFileChange} 
                 accept=".pdf,.doc,.docx" 
                 id="file-upload"
-                style={{ display: 'none' }}
+                style={{ display: 'none' }} // setting as none so i can style a label instead of having custom choose file btn
                 />
                 <br /><br />
+
+                <textarea
+                    placeholder="Paste the job posting here..."
+                    value={jobPosting}
+                    onChange={(e) => setJobPosting(e.target.value)}
+                    className={styles.uploadTextArea}
+                />
+
+
                 {/* Submit button to trigger the file upload */}
-                <button type="submit">Upload</button>
+                <button type="submit">Analyze</button>
               </form>
 
 
               {/* Display the upload status if available */}
               {uploadStatus && <p>{uploadStatus}</p>}
 
+              {/* Display Results After Processing */}
+            {results && (
+                <div className={styles.resultsContainer}>
+                    <h3>Analysis Results</h3>
+                    <p><strong>Compatibility Score:</strong> {results.score}%</p>
+                    <h4>Suggested Keywords:</h4>
+                    {results?.suggestedKeywords?.length > 0 ? (
+                  <ul>
+                      {results.suggestedKeywords.map((keyword, index) => (
+                          <li key={index}>{keyword}</li>
+                      ))}
+                  </ul>
+                      ) : (
+                          <p>No suggested keywords.</p>
+                      )}
+                      <h4>Feedback:</h4>
+                      <p>{results.feedback}</p>
+                  </div>
+              )}
 
-              <textarea
-                    placeholder="Paste the job posting here..."
-                    value={jobPosting}
-                    onChange={(e) => setJobPosting(e.target.value)}
-                    className={styles.uploadTextArea}
-                />
+
+
+             
             </div>
           );
         };
         
-        // Export the component so it can be imported and used in other parts of your app
         export default ResumeUpload;
     
