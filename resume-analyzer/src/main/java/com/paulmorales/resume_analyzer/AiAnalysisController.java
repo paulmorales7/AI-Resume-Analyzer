@@ -1,25 +1,37 @@
 package com.paulmorales.resume_analyzer;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api")
 public class AiAnalysisController {
 
-    // variable for our service file methods which must be initialized
-    private final AIanalysisService aianalysisService;
+    private final ResumeAnalyzerService resumeAnalyzerService;
 
-    // constructor injection (to ensure that the service is provided when the controller is created)
+    // Constructor injection for ResumeAnalyzerService
     @Autowired
-    public AiAnalysisController(AIanalysisService aianalysisService) {
-        this.aianalysisService = aianalysisService;
+    public AiAnalysisController(ResumeAnalyzerService resumeAnalyzerService) {
+        this.resumeAnalyzerService = resumeAnalyzerService;
     }
 
-    //POST endpoint for text analysis
+    // POST endpoint for analyzing a job posting
     @PostMapping("/analyze-resume")
-    public String analyzeResume(@RequestBody String resumeText) {
-        return aianalysisService.analyzeResume(resumeText);
+    public ResponseEntity<ResumeAnalyzerService.AnalysisResult> analyzeResume(@RequestBody String resumeText) {
+        try {
+            // Call the ResumeAnalyzerService to get the analysis result
+            ResumeAnalyzerService.AnalysisResult result = resumeAnalyzerService.analyzeResume(resumeText);
+
+            // Return the result with HTTP status OK
+            return new ResponseEntity<>(result, HttpStatus.OK);
+        } catch (Exception e) {
+            // Log the exception (optional, for debugging)
+            e.printStackTrace();
+
+            // Return error response with INTERNAL_SERVER_ERROR status
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 }
-

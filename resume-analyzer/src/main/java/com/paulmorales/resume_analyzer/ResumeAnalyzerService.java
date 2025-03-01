@@ -16,15 +16,10 @@ public class ResumeAnalyzerService {
     @Value("${groq.api.key}")
     private String groqApiKey;
 
-    private static final String GROQ_API_URL = "https://api.groq.com/v1/chat/completions";
+    private static final String GROQ_API_URL = "https://api.groq.com/openai/v1/chat/completions";
 
-    // Example function to compare resume with job posting
-    public static int calculateScore(MultipartFile resume, String jobPosting) {
-        return new Random().nextInt(41) + 50; // Returns a random score between 50-90%
-    }
-
-    // Function to extract keywords using Groq API
-    public List<String> extractKeywords(String jobPosting) {
+    // Function to analyze the resume using the Groq API
+    public AnalysisResult analyzeResume(String jobPosting) {
         try {
             RestTemplate restTemplate = new RestTemplate();
 
@@ -33,14 +28,16 @@ public class ResumeAnalyzerService {
             headers.set("Authorization", "Bearer " + groqApiKey);
             headers.setContentType(MediaType.APPLICATION_JSON);
 
-            // Create the prompt
-            String prompt = "Extract key skills, programming languages, software, and technologies mentioned in this job posting:\n\n" + jobPosting;
+            // Create the prompt for Groq API
+            String prompt = "Extract key skills, programming languages, software, and technologies mentioned in this job posting. " +
+                            "Then, provide feedback on the compatibility between these and a typical resume. " +
+                            "Return the extracted keywords in a numbered list, followed by the feedback paragraph.\n\n" + jobPosting;
 
             // Construct request body
             JSONObject requestBody = new JSONObject();
-            requestBody.put("model", "gpt-4"); // Use the appropriate model
+            requestBody.put("model", "llama-3.3-70b-versatile");
             requestBody.put("messages", new JSONArray()
-                    .put(new JSONObject().put("role", "system").put("content", "You are an AI assistant that extracts key skills and software from job postings."))
+                    .put(new JSONObject().put("role", "system").put("content", "You are an AI assistant that analyzes job postings and resumes."))
                     .put(new JSONObject().put("role", "user").put("content", prompt))
             );
             requestBody.put("temperature", 0.3);
@@ -52,16 +49,60 @@ public class ResumeAnalyzerService {
             // Parse the response
             JSONObject jsonResponse = new JSONObject(response.getBody());
             JSONArray choices = jsonResponse.getJSONArray("choices");
+
             if (choices.length() > 0) {
                 String extractedText = choices.getJSONObject(0).getJSONObject("message").getString("content");
 
-                // Splitting response by commas to form a list of keywords
-                return Arrays.asList(extractedText.split(",\\s*"));
-            }
+                // Splitting response into keywords and feedback
+                String[] parts = extractedText.split("\n\n");
+                List<String> keywords = new ArrayList<>();
+                String feedback = "";
 
+                if (parts.length > 0) {
+                    String[] keywordLines = parts[0].split("\n");
+                    for (String line : keywordLines) {
+                        if (!line.trim().isEmpty()) {
+                            keywords.add(line.trim());
+                        }
+                    }
+                }
+                if (parts.length > 1) {
+                    feedback = parts[1].trim();
+                }
+
+                // Return both keywords and feedback as part of an AnalysisResult
+                return new AnalysisResult(keywords, feedback);
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return Collections.singletonList("No specific keywords found");
+        return new AnalysisResult(Collections.singletonList("No specific keywords found"), "No feedback provided.");
+    }
+
+    // Helper class to hold the result
+    public static class AnalysisResult {
+        private List<String> keywords;
+        private String feedback;
+
+        public AnalysisResult(List<String> keywords, String feedback) {
+            this.keywords = keywords;
+            this.feedback = feedback;
+        }
+
+        public List<String> getKeywords() {
+            return keywords;
+        }
+
+        public void setKeywords(List<String> keywords) {
+            this.keywords = keywords;
+        }
+
+        public String getFeedback() {
+            return feedback;
+        }
+
+        public void setFeedback(String feedback) {
+            this.feedback = feedback;
+        }
     }
 }

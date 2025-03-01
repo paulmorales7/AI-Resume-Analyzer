@@ -14,6 +14,13 @@ import java.util.*;
  // allowing CORS in react
 public class ResumeController {
 
+    private final ResumeAnalyzerService resumeAnalyzerService;
+
+    // Inject ResumeAnalyzerService using constructor
+    public ResumeController(ResumeAnalyzerService resumeAnalyzerService) {
+        this.resumeAnalyzerService = resumeAnalyzerService;
+    }
+
     @PostMapping("/upload") // creating HTTP POST endpoint for upload
     public ResponseEntity<Map<String, Object>> analyzeResume(
             @RequestParam("file") MultipartFile file,
@@ -31,7 +38,7 @@ public class ResumeController {
 
             // Analyze resume (this is placeholder logic, replace with actual processing)
             int score = ResumeAnalyzerService.calculateScore(file, jobPosting);
-            List<String> suggestedKeywords = ResumeAnalyzerService.extractKeywords(jobPosting);
+            List<String> suggestedKeywords = resumeAnalyzerService.extractKeywords(jobPosting);
             String feedback = "Your resume matches " + score + "% of the job posting. "
                     + "Consider adding these keywords: " + String.join(", ", suggestedKeywords);
 
