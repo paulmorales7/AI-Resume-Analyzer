@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/api")
@@ -11,18 +12,18 @@ public class AiAnalysisController {
 
     private final ResumeAnalyzerService resumeAnalyzerService;
 
-    // Constructor injection for ResumeAnalyzerService
     @Autowired
     public AiAnalysisController(ResumeAnalyzerService resumeAnalyzerService) {
         this.resumeAnalyzerService = resumeAnalyzerService;
     }
 
-    // POST endpoint for analyzing a job posting
-    @PostMapping("/analyze-resume")
-    public ResponseEntity<ResumeAnalyzerService.AnalysisResult> analyzeResume(@RequestBody String resumeText) {
+    @PostMapping("/ai-analyze-resume")
+    public ResponseEntity<ResumeAnalyzerService.AnalysisResult> analyzeResume(
+            @RequestParam("resume") MultipartFile resume, 
+            @RequestParam("jobPosting") String jobPosting) {
         try {
             // Call the ResumeAnalyzerService to get the analysis result
-            ResumeAnalyzerService.AnalysisResult result = resumeAnalyzerService.analyzeResume(resumeText);
+            ResumeAnalyzerService.AnalysisResult result = resumeAnalyzerService.analyzeResume(jobPosting, resume);
 
             // Return the result with HTTP status OK
             return new ResponseEntity<>(result, HttpStatus.OK);

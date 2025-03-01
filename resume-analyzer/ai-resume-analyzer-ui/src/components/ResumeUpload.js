@@ -22,12 +22,12 @@ const ResumeUpload = ({ onUpload }) => {
         }
 
         const formData = new FormData();
-        formData.append('file', selectedFile);
+        formData.append('resume', selectedFile);
         formData.append('jobPosting', jobPosting);
 
         try {
             const response = await fetch (
-                'http://localhost:8080/api/resume/upload', 
+                'http://localhost:8080/api/ai-analyze-resume', 
                 {
                 method: 'POST',
                 body: formData
@@ -41,9 +41,7 @@ const ResumeUpload = ({ onUpload }) => {
                 } else {
                   setUploadStatus(data.error || "Error analyzing resume.")
                 }
-              
 
-               
                 if (onUpload) {
                     // only if data from upload is provided is res passed back
                     onUpload(data);
@@ -106,13 +104,8 @@ const ResumeUpload = ({ onUpload }) => {
                       <p>{results.feedback}</p>
                   </div>
               )}
-
-
-
-             
             </div>
           );
         };
         
         export default ResumeUpload;
-    

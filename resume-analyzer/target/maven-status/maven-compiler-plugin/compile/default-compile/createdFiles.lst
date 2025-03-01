@@ -5,3 +5,4 @@ com/paulmorales/resume_analyzer/AiAnalysisController.class
 com/paulmorales/resume_analyzer/AiResumeAnalyzerApplication.class
 com/paulmorales/resume_analyzer/CorsConfig.class
 com/paulmorales/resume_analyzer/CorsConfig$1.class
+com/paulmorales/resume_analyzer/ResumeAnalyzerService$AnalysisResult.class
