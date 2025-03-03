@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import styles from './ResumeUpload.module.css';
+import Analysis from './Analysis'; 
 
 const ResumeUpload = ({ userName, onUpload }) => {
     const [selectedFile, setSelectedFile] = useState(null);
@@ -39,7 +40,7 @@ const ResumeUpload = ({ userName, onUpload }) => {
 
                 if (response.ok) {
                   setUploadStatus("Resume successfully analyzed");
-                  setResults(data);
+                  onUpload(data);
                 } else {
                   setUploadStatus(data.error || "Error analyzing resume.")
                 }
@@ -92,24 +93,7 @@ const ResumeUpload = ({ userName, onUpload }) => {
               {uploadStatus && <p>{uploadStatus}</p>}
 
               {/* Display Results After Processing */}
-            {results && (
-                <div className={styles.resultsContainer}>
-                    <h3>Analysis Results</h3>
-                    <p><strong>Compatibility Score:</strong> {results.score}%</p>
-                    <h4>Suggested Keywords:</h4>
-                    {results?.suggestedKeywords?.length > 0 ? (
-                  <ul>
-                      {results.suggestedKeywords.map((keyword, index) => (
-                          <li key={index}>{keyword}</li>
-                      ))}
-                  </ul>
-                      ) : (
-                          <p>No suggested keywords.</p>
-                      )}
-                      <h4>Feedback:</h4>
-                      <p>{results.feedback}</p>
-                  </div>
-              )}
+              {results && <Analysis results={results}/>}
             </div>
           );
         };
