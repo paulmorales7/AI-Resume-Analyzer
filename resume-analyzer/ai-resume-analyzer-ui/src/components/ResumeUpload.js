@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
 import styles from './ResumeUpload.module.css';
 
-const ResumeUpload = ({ onUpload }) => {
+const ResumeUpload = ({ userName, onUpload }) => {
     const [selectedFile, setSelectedFile] = useState(null);
     const [uploadStatus, setUploadStatus] = useState('');
     const [jobPosting, setJobPosting] = useState('');
     const [results, setResults] = useState(null);
+
+    
 
     const handleFileChange = (e) => {
         // targeting the first file selected by user
@@ -53,6 +55,10 @@ const ResumeUpload = ({ onUpload }) => {
 
         return (
             <div style={{ textAlign: 'center', marginTop: '20px' }}>
+
+              {userName && <h2>Hello, {userName}!</h2>}
+
+
               <h2>Upload Your Resume</h2>
 
               <form onSubmit={handleSubmit}>
