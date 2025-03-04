@@ -21,7 +21,7 @@ public class ResumeParser {
             }
         }
 
-        // If no sections found, return original text (fallback)
+        // If no sections found, return original text 
         return relevantInfo.length() > 0 ? relevantInfo.toString() : resumeText;
     }
 }
