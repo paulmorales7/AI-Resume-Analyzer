@@ -24,7 +24,7 @@ public class AIanalysisService {
         headers.set("Authorization", "Bearer " + apiKey);
 
         String requestBody = "{"
-                + "\"model\": \"llama-3.3-70b-versatile\", "  
+                + "\"model\": \"llama-guard-3-8b\", "  
                 + "\"messages\": [{\"role\": \"system\", \"content\": \"You are an AI resume analyst.\"},"
                 + "{\"role\": \"user\", \"content\": \"" + escapeJSON(resumeText) + "\"}],"
                 + "\"max_tokens\": 500"

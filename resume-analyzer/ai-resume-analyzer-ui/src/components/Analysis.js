@@ -6,6 +6,7 @@ const Analysis = ({ results }) => {
     if (!results) {
         return <p>No Results available, please upload a resume file first.</p>
     }
+    
     return(
         <div className={styles.resultsContainer}>
       <h3>Analysis Results</h3>

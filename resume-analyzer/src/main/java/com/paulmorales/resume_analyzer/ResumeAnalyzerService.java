@@ -20,103 +20,108 @@ public class ResumeAnalyzerService {
 
     private static final String GROQ_API_URL = "https://api.groq.com/openai/v1/chat/completions";
 
-    // Method to calculate compatibility score (using random value for now)
-    public int calculateScore(MultipartFile resume, String jobPosting) {
-        return new Random().nextInt(41) + 50;
-    }
+    private static final int MAX_TOKENS = 6000;
 
-    // Function to extract keywords using Groq API
-    public List<String> extractKeywords(String jobPosting) {
+    // Function to call Groq API with a specific prompt
+    private String callGroqApi(String prompt) {
         try {
+            System.out.println("Sending request to Groq API...");
             RestTemplate restTemplate = new RestTemplate();
-
-            // Set up headers
             HttpHeaders headers = new HttpHeaders();
             headers.set("Authorization", "Bearer " + groqApiKey);
             headers.setContentType(MediaType.APPLICATION_JSON);
-
-            // Create the prompt to extract essential keywords from the job posting
-            String prompt = "Extract key skills, qualifications, software, certifications, and experiences mentioned in this job posting. " +
-                            "Return the list of essential keywords (skills, software, qualifications) and experience. Don't include unnecessary words:\n\n" + jobPosting;
-
-            // Construct request body
+    
             JSONObject requestBody = new JSONObject();
-            requestBody.put("model", "llama-3.3-70b-versatile"); // Use the appropriate model
+            requestBody.put("model", "llama-guard-3-8b");
             requestBody.put("messages", new JSONArray()
-                    .put(new JSONObject().put("role", "system").put("content", "You are an AI assistant that extracts essential skills, qualifications, software, certifications, and experiences from job postings."))
+                    .put(new JSONObject().put("role", "system").put("content", "You are an AI assistant helping with resume analysis."))
                     .put(new JSONObject().put("role", "user").put("content", prompt))
             );
             requestBody.put("temperature", 0.3);
-
-            // Make API request
+    
+            System.out.println("Request body: " + requestBody.toString());
+    
             HttpEntity<String> entity = new HttpEntity<>(requestBody.toString(), headers);
             ResponseEntity<String> response = restTemplate.exchange(GROQ_API_URL, HttpMethod.POST, entity, String.class);
-
-            // Parse the response
+            
+            System.out.println("Response received: " + response.getBody());
+    
             JSONObject jsonResponse = new JSONObject(response.getBody());
             JSONArray choices = jsonResponse.getJSONArray("choices");
-
+    
             if (choices.length() > 0) {
-                String extractedText = choices.getJSONObject(0).getJSONObject("message").getString("content");
-
-                // Split the extracted text into a list of keywords
-                return Arrays.asList(extractedText.split(",\\s*"));
+                return choices.getJSONObject(0).getJSONObject("message").getString("content");
             }
-
         } catch (Exception e) {
+            System.out.println("Error calling Groq API: " + e.getMessage());
             e.printStackTrace();
         }
-        return Collections.singletonList("No specific keywords found");
+        return "Error processing request.";
     }
 
-    // Method to analyze a job posting and resume (returns keywords and feedback)
+    // Summarize text to fit token limit
+    private String summarizeText(String text, int maxLength) {
+        if (text.length() <= maxLength) {
+            return text;
+        }
+        return text.substring(0, maxLength) + "... (truncated)";
+    }
+
+    // Extract essential keywords from the job posting
+    public String extractKeywords(String jobPosting) {
+        String shortJobPosting = summarizeText(jobPosting, MAX_TOKENS / 3);
+        String prompt = "Extract key skills, technologies, tools, databases, and certifications mentioned in this job posting. Return as a simple list.\n\n" + shortJobPosting;
+        return callGroqApi(prompt);
+    }
+
+    // Identify missing requirements from the resume compared to the job posting
+    public String identifyMissingRequirements(String jobPosting, String resumeText) {
+        String shortJobPosting = summarizeText(jobPosting, MAX_TOKENS / 3);
+        String shortResume = summarizeText(resumeText, MAX_TOKENS / 3);
+        String prompt = "Compare the following resume to the job posting. Identify the main missing skills, experience, or qualifications:\n\nJob Posting:\n" + shortJobPosting + "\n\nResume:\n" + shortResume;
+        return callGroqApi(prompt);
+    }
+
+    // Assess the candidate's overall preparedness
+    public String assessPreparedness(String jobPosting, String resumeText) {
+        String shortJobPosting = summarizeText(jobPosting, MAX_TOKENS / 3);
+        String shortResume = summarizeText(resumeText, MAX_TOKENS / 3);
+        String prompt = "Analyze this resume against the job posting and provide a short assessment of the candidate’s overall preparedness for the role.\n\nJob Posting:\n" + shortJobPosting + "\n\nResume:\n" + shortResume;
+        return callGroqApi(prompt);
+    }
+
+    // Analyze resume and job posting
     public AnalysisResult analyzeResume(String jobPosting, MultipartFile resumeFile) throws IOException {
-        // Convert resume MultipartFile to String
         String resumeText = new String(resumeFile.getBytes(), StandardCharsets.UTF_8);
+        String keywords = extractKeywords(jobPosting);
+        String missingRequirements = identifyMissingRequirements(jobPosting, resumeText);
+        String preparedness = assessPreparedness(jobPosting, resumeText);
 
-        // Extract keywords from the job posting
-        List<String> jobPostingKeywords = extractKeywords(jobPosting);
-
-        // Check if the keywords are in the resumeText (this can be expanded)
-        List<String> matchedKeywords = new ArrayList<>();
-        for (String keyword : jobPostingKeywords) {
-            if (resumeText.contains(keyword)) {
-                matchedKeywords.add(keyword);
-            }
-        }
-
-        // Generate feedback based on the matched keywords
-        String feedback = "The resume contains the following keywords that match the job posting: " + String.join(", ", matchedKeywords) + ".\n" +
-                          "Additional analysis could be done to refine the feedback.";
-
-        // Return the analysis result with keywords, feedback, and compatibility score
-        return new AnalysisResult(jobPostingKeywords, feedback, calculateScore(resumeFile, jobPosting));
+        return new AnalysisResult(keywords, missingRequirements, preparedness);
     }
 
-    // Nested static class to hold the analysis result (keywords, feedback, score)
+    // Nested static class to hold the analysis result
     public static class AnalysisResult {
-        private List<String> suggestedKeywords;
-        private String feedback;
-        private int score;
+        private String keywords;
+        private String missingRequirements;
+        private String preparedness;
 
-        // Constructor to initialize keywords, feedback, and score
-        public AnalysisResult(List<String> suggestedKeywords, String feedback, int score) {
-            this.suggestedKeywords = suggestedKeywords;
-            this.feedback = feedback;
-            this.score = score;
+        public AnalysisResult(String keywords, String missingRequirements, String preparedness) {
+            this.keywords = keywords;
+            this.missingRequirements = missingRequirements;
+            this.preparedness = preparedness;
         }
 
-        // Getters and setters
-        public List<String> getSuggestedKeywords() {
-            return suggestedKeywords;
+        public String getKeywords() {
+            return keywords;
         }
 
-        public String getFeedback() {
-            return feedback;
+        public String getMissingRequirements() {
+            return missingRequirements;
         }
 
-        public int getScore() {
-            return score;
+        public String getPreparedness() {
+            return preparedness;
         }
     }
 }
