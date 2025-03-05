@@ -2,6 +2,7 @@ package com.paulmorales.resume_analyzer;
 
 import org.springframework.stereotype.Service;
 import org.apache.tika.Tika;
+import org.apache.tika.exception.TikaException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -32,6 +33,8 @@ public class AIanalysisService {
     private String extractTextFromFile(MultipartFile file) throws IOException {
         try (InputStream inputStream = file.getInputStream()) {
             return tika.parseToString(inputStream);
+        } catch (TikaException e) {
+            throw new IOException("Error accessing text from file: " + e.getMessage(), e);
         }
     }
 

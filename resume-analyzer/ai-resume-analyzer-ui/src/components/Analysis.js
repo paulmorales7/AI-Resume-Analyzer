@@ -1,57 +1,35 @@
-import React from "react";
+import React from 'react';
 import styles from './Analysis.module.css';
 
-const Analysis = ({ results }) => {
+const Analysis = ({ analysisData }) => {
+  if (!analysisData) {
+    return <div>Loading...</div>; // or any other loading indicator
+  }
 
-    if (!results) {
-        return <p>No results available, please upload a resume and job posting first.</p>;
-    }
+  const { keywords, missingRequirements, feedback } = analysisData;
 
-    return(
-        <div className={styles.resultsContainer}>
-            <h3>Analysis Results</h3>
+  // Add default values in case the properties are undefined
+  const keywordsList = keywords && keywords.length > 0 ? keywords : 'No keywords provided';
+  const missingRequirementsText = missingRequirements || 'No missing requirements provided';
+  const feedbackText = feedback || 'No feedback provided';
 
-            {/* Display Compatibility Score */}
-            <h4>Compatibility Score:</h4>
-            {results.compatibility ? (
-                <p>{results.compatibility}%</p>
-            ) : (
-                <p>No compatibility score available.</p>
-            )}
-
-            {/* Display Missing Requirements */}
-            <h4>Missing Requirements:</h4>
-            {results.missingRequirements && results.missingRequirements.length > 0 ? (
-                <ul>
-                    {results.missingRequirements.map((req, index) => (
-                        <li key={index}>{req}</li>
-                    ))}
-                </ul>
-            ) : (
-                <p>No missing requirements identified.</p>
-            )}
-
-            {/* Display Suggested Keywords */}
-            <h4>Suggested Keywords:</h4>
-            {results.keywords && results.keywords.length > 0 ? (
-                <ul>
-                    {results.keywords.map((keyword, index) => (
-                        <li key={index}>{keyword}</li>
-                    ))}
-                </ul>
-            ) : (
-                <p>No suggested keywords available.</p>
-            )}
-
-            {/* Display Feedback */}
-            <h4>Feedback:</h4>
-            {results.feedback ? (
-                <p>{results.feedback}</p>
-            ) : (
-                <p>No feedback available.</p>
-            )}
-        </div>
-    );
+  return (
+    <div>
+      <h2>AI Analysis</h2>
+      <div>
+        <h3>Keywords</h3>
+        <p>{keywordsList}</p>
+      </div>
+      <div>
+        <h3>Missing Requirements</h3>
+        <p>{missingRequirementsText}</p>
+      </div>
+      <div>
+        <h3>Feedback</h3>
+        <p>{feedbackText}</p>
+      </div>
+    </div>
+  );
 };
 
 export default Analysis;

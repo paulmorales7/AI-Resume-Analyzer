@@ -1,83 +1,98 @@
 import React, { useState } from 'react';
-import styles from './ResumeUpload.module.css';
+import styles from './ResumeUpload.module.css'; // Assuming you are using CSS Modules
 
-const ResumeUpload = ({ userName, onAnalysisComplete }) => {
-  const [selectedFile, setSelectedFile] = useState(null);
+const ResumeUpload = ({ setAnalysisData }) => {
+  const [resumeFile, setResumeFile] = useState(null);
   const [jobPosting, setJobPosting] = useState('');
-  const [uploadStatus, setUploadStatus] = useState('');
-
-  // Handle File Upload
+  const [loading, setLoading] = useState(false);  // To manage loading state
+  const [errorMessage, setErrorMessage] = useState(''); // To show errors to the user
+  
   const handleFileChange = (e) => {
-    setSelectedFile(e.target.files[0]);
+    setResumeFile(e.target.files[0]);
   };
 
-  // Handle Job Posting Text Change
   const handleJobPostingChange = (e) => {
     setJobPosting(e.target.value);
   };
 
-  // Handle Analyze Button Click
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!selectedFile || !jobPosting.trim()) {
-      setUploadStatus('Please upload a resume and paste the job posting.');
+
+    if (!resumeFile || !jobPosting) {
+      alert("Please upload a resume and provide a job posting.");
       return;
     }
 
+    setLoading(true);  // Set loading to true when starting the request
+    setErrorMessage('');  // Clear previous errors
+
+    // Prepare the form data for the API request
     const formData = new FormData();
-    formData.append('resume', selectedFile);
-    formData.append('jobPosting', jobPosting);
+    formData.append("resume", resumeFile);
+    formData.append("jobPosting", jobPosting);
 
     try {
-      const response = await fetch('http://localhost:8080/api/ai-analyze-resume', {
-        method: 'POST',
+      // Send the POST request to the backend for AI analysis
+      const response = await fetch("http://localhost:8080/api/analyze-resume", {
+        method: "POST",
         body: formData,
       });
 
+      if (!response.ok) {
+        throw new Error('Error: ' + response.statusText);
+      }
+
       const data = await response.json();
 
-      if (response.ok) {
-        setUploadStatus("Resume successfully analyzed");
-        onAnalysisComplete(data);
+      if (data) {
+        // Log the AI response in the terminal (VS Code)
+        console.log("AI Feedback:", data);
+
+        // Pass the AI data to App.js through the setAnalysisData function
+        setAnalysisData(data);
       } else {
-        setUploadStatus(data.error || "Error analyzing resume.");
+        console.log("No data received from AI.");
+        setErrorMessage('No data received from AI.');
       }
     } catch (error) {
-      setUploadStatus(`Error uploading file: ${error.message}`);
+      console.error("Error uploading file:", error);
+      setErrorMessage('There was an error processing your request. Please try again.');
+    } finally {
+      setLoading(false);  // Set loading to false once the request is complete
     }
   };
 
   return (
-    <div className={styles.uploadContainer}>
-      <h2>Hello, {userName}! Upload Your Resume</h2>
-      
-      {/* File Upload Input */}
-      <label htmlFor="resume-upload" className={styles.customFileUpload}>
-        {selectedFile ? selectedFile.name : 'Choose Resume File'}
-      </label>
-      <input
-        type="file"
-        id="resume-upload"
-        accept=".pdf,.doc,.docx"
-        onChange={handleFileChange}
-        style={{ display: 'none' }}
-      />
+    <div>
+      <h1>Upload Resume</h1>
+      <form onSubmit={handleSubmit}>
+        <div className={`form-group ${styles.formGroup}`}>
+          <label htmlFor="resume-upload" className={`${styles.uploadLabel}`}>
+            Upload Resume
+          </label>
+          <input
+            type="file"
+            id="resume-upload"
+            onChange={handleFileChange}
+            className={`${styles.fileInput}`}
+          />
+        </div>
+        
+        <div className={`form-group ${styles.formGroup}`}>
+          <textarea
+            placeholder="Job Posting"
+            value={jobPosting}
+            onChange={handleJobPostingChange}
+            className={`${styles.uploadTextArea}`}
+          />
+        </div>
+        
+        <button type="submit" className={`${styles.analyzeButton}`} disabled={loading}>
+          {loading ? 'Analyzing...' : 'Analyze Resume'}
+        </button>
+      </form>
 
-      {/* Job Posting Text Area */}
-      <textarea
-        className={styles.uploadTextArea}
-        placeholder="Paste the job posting here..."
-        value={jobPosting}
-        onChange={handleJobPostingChange}
-      />
-
-      {/* Analyze Button */}
-      <button onClick={handleSubmit} className={styles.analyzeButton}>
-        Analyze
-      </button>
-
-      {/* Upload Status */}
-      {uploadStatus && <p>{uploadStatus}</p>}
+      {errorMessage && <div className={styles.errorMessage}>{errorMessage}</div>}
     </div>
   );
 };
