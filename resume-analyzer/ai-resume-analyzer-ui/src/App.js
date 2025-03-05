@@ -1,34 +1,30 @@
 import React, { useState } from 'react';
 import LandingPage from './components/LandingPage';
 import ResumeUpload from './components/ResumeUpload';
-import Analysis from './components/Analysis'; 
+import Analysis from './components/Analysis';
 
-function App() {
+const App = () => {
+  const [step, setStep] = useState(1);
   const [userName, setUserName] = useState('');
-  const [hasContinued, setHasContinued] = useState(false);
   const [results, setResults] = useState(null);
-  const [currentPage,setCurrentPage ] = useState('landing');
 
-  const handleContinue = (name) => {
+  const handleNameSubmit = (name) => {
     setUserName(name);
-    setHasContinued(true);
-    setCurrentPage('resume-upload');
+    setStep(2);
   };
 
-  const handleResults = (data) => {
+  const handleAnalysisComplete = (data) => {
     setResults(data);
-    setCurrentPage('analysis');
-  }
+    setStep(3);
+  };
 
   return (
     <div>
-    {currentPage === 'landing' && <LandingPage onContinue={handleContinue} />}
-    {currentPage === 'resume-upload' && (
-      <ResumeUpload userName={userName} onUpload={handleResults} />
-    )}
-    {currentPage === 'analysis' && <Analysis results={results} />}
-  </div>
+      {step === 1 && <LandingPage onNameSubmit={handleNameSubmit} />}
+      {step === 2 && <ResumeUpload userName={userName} onAnalysisComplete={handleAnalysisComplete} />}
+      {step === 3 && <Analysis results={results} />}
+    </div>
   );
-}
+};
 
 export default App;

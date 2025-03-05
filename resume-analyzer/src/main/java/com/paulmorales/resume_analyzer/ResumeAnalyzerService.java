@@ -17,7 +17,8 @@ public class ResumeAnalyzerService {
     private String groqApiKey;
 
     private static final String GROQ_API_URL = "https://api.groq.com/openai/v1/chat/completions";
-    private static final int MAX_TOKENS = 5000;  // Reduced to ensure API efficiency
+    private static final int MAX_TOKENS = 15000;  // Max token limit for the AI API
+    private static final int MAX_TOKENS_PER_REQUEST = 2000;  // Reduced to ensure AI payload is manageable
 
     // Calls the Groq API
     private String callGroqApi(String prompt) {
@@ -53,7 +54,13 @@ public class ResumeAnalyzerService {
         }
     }
 
-    // Extracts key sections from resume
+    // Summarizes the job posting to focus on essential skills and qualifications
+    private String summarizeJobPosting(String jobPosting) {
+        String prompt = "Summarize this job posting to focus only on the essential skills, tools, and qualifications, excluding unnecessary details:\n\n" + jobPosting;
+        return callGroqApi(prompt);
+    }
+
+    // Extracts relevant sections of the resume
     private String extractRelevantInfo(String resumeText) {
         StringBuilder relevantInfo = new StringBuilder();
 
@@ -69,12 +76,6 @@ public class ResumeAnalyzerService {
         return relevantInfo.length() > 0 ? relevantInfo.toString() : resumeText;  // Use full text as fallback
     }
 
-    // Extracts keywords from the job posting
-    public String extractKeywords(String jobPosting) {
-        String prompt = "Extract key skills, technologies, tools, databases, and certifications mentioned in this job posting. Return as a list.\n\n" + jobPosting;
-        return callGroqApi(prompt);
-    }
-
     // Identifies missing requirements
     public String identifyMissingRequirements(String jobPosting, String resumeText) {
         String relevantResumeText = extractRelevantInfo(resumeText);
@@ -83,36 +84,29 @@ public class ResumeAnalyzerService {
         return callGroqApi(prompt);
     }
 
-    // Assesses candidate preparedness
-    public String assessPreparedness(String jobPosting, String resumeText) {
-        String relevantResumeText = extractRelevantInfo(resumeText);
-        String prompt = "Analyze this resume against the job posting and provide a short assessment of the candidate’s preparedness.\n\nJob Posting:\n" 
-                        + jobPosting + "\n\nResume:\n" + relevantResumeText;
-        return callGroqApi(prompt);
-    }
-
-    // Analyzes the resume
+    // Analyzes the resume, returns missing requirements and a small feedback paragraph
     public AnalysisResult analyzeResume(String jobPosting, MultipartFile resumeFile) throws IOException {
         String fullResumeText = new String(resumeFile.getBytes(), StandardCharsets.UTF_8);
-        String relevantResumeText = extractRelevantInfo(fullResumeText);
+        String jobPostingSummary = summarizeJobPosting(jobPosting);  // Summarize job posting to reduce token size
+        String missingRequirements = identifyMissingRequirements(jobPostingSummary, fullResumeText);  // Identify missing requirements
 
-        String keywords = extractKeywords(jobPosting);
-        String missingRequirements = identifyMissingRequirements(jobPosting, relevantResumeText);
-        String preparedness = assessPreparedness(jobPosting, relevantResumeText);
+        // Provide a small feedback paragraph
+        String feedback = "Based on the analysis, here are the areas where the resume could be improved.";
 
-        return new AnalysisResult(keywords, missingRequirements, preparedness);
+        // Return result with missing requirements and feedback
+        return new AnalysisResult("", missingRequirements, feedback);
     }
 
     // Holds the analysis result
     public static class AnalysisResult {
         private final String keywords;
         private final String missingRequirements;
-        private final String preparedness;
+        private final String feedback;
 
-        public AnalysisResult(String keywords, String missingRequirements, String preparedness) {
+        public AnalysisResult(String keywords, String missingRequirements, String feedback) {
             this.keywords = keywords;
             this.missingRequirements = missingRequirements;
-            this.preparedness = preparedness;
+            this.feedback = feedback;
         }
 
         public String getKeywords() {
@@ -123,8 +117,8 @@ public class ResumeAnalyzerService {
             return missingRequirements;
         }
 
-        public String getPreparedness() {
-            return preparedness;
+        public String getFeedback() {
+            return feedback;
         }
     }
 }

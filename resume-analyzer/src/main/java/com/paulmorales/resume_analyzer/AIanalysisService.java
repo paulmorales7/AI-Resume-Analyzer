@@ -1,49 +1,55 @@
 package com.paulmorales.resume_analyzer;
 
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.web.client.RestTemplateBuilder;
-import org.springframework.http.*;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
+import org.apache.tika.Tika;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
+
+// Import the AnalysisResult class
+import com.paulmorales.resume_analyzer.AiAnalysisController.AnalysisResult;
+import org.springframework.web.multipart.MultipartFile;
 
 @Service
 public class AIanalysisService {
-    @Value("${groq.api.key}")
-    private String apiKey;
-    private final String groqApiUrl = "https://api.groq.com/openai/v1/chat/completions";
 
-    private final RestTemplate restTemplate;
+    private final Tika tika = new Tika();
 
-    public AIanalysisService(RestTemplateBuilder builder) {
-        this.restTemplate = builder.build();
-    }
+    public AnalysisResult analyzeResume(MultipartFile resumeFile, String jobPosting) {
+        try {
+            // Extract text from the uploaded resume file
+            String resumeText = extractTextFromFile(resumeFile);
 
-    public String analyzeResume(String resumeText) {
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
-        headers.set("Authorization", "Bearer " + apiKey);
+            // Analyze resume against job posting
+            return performAnalysis(resumeText, jobPosting);
 
-        String requestBody = "{"
-                + "\"model\": \"llama-guard-3-8b\", "  
-                + "\"messages\": [{\"role\": \"system\", \"content\": \"You are an AI resume analyst.\"},"
-                + "{\"role\": \"user\", \"content\": \"" + escapeJSON(resumeText) + "\"}],"
-                + "\"max_tokens\": 500"
-                + "}";
-
-        HttpEntity<String> entity = new HttpEntity<>(requestBody, headers);
-
-        try { 
-            ResponseEntity<String> response = restTemplate.exchange(groqApiUrl, HttpMethod.POST, entity, String.class);
-            return response.getBody();
-        } catch (Exception e) {
-            return "Error calling Groq api: " + e.getMessage();
+        } catch (IOException e) {
+            return new AnalysisResult(new ArrayList<>(), "Error reading resume file: " + e.getMessage());
         }
     }
 
-    private String escapeJSON(String text) {
-        return text.replace("\\", "\\\\")
-                   .replace("\"", "\\\"")
-                   .replace("\n", "\\n")
-                   .replace("\r", "\\r");
+    private String extractTextFromFile(MultipartFile file) throws IOException {
+        try (InputStream inputStream = file.getInputStream()) {
+            return tika.parseToString(inputStream);
+        }
+    }
+
+    private AnalysisResult performAnalysis(String resumeText, String jobPosting) {
+        List<String> missingSkills = new ArrayList<>();
+
+        // Simple keyword matching logic (replace with AI logic later)
+        if (!resumeText.toLowerCase().contains("java")) {
+            missingSkills.add("Java");
+        }
+        if (!resumeText.toLowerCase().contains("spring boot")) {
+            missingSkills.add("Spring Boot");
+        }
+
+        String feedback = missingSkills.isEmpty() ?
+                "Your resume matches the job posting well!" :
+                "Consider adding experience with: " + String.join(", ", missingSkills);
+
+        return new AnalysisResult(missingSkills, feedback);
     }
 }

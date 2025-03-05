@@ -17,7 +17,7 @@ public class ResumeController {
         this.resumeAnalyzerService = resumeAnalyzerService;
     }
 
-    @PostMapping("/api/analyze-resume")
+    @PostMapping("/analyze-resume")
     public ResponseEntity<ResumeAnalyzerService.AnalysisResult> analyzeResume(
             @RequestParam("resume") MultipartFile resume, 
             @RequestParam("jobPosting") String jobPosting) {

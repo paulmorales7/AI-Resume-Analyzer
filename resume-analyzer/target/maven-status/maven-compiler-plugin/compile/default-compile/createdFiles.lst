@@ -1,8 +1,11 @@
 com/paulmorales/resume_analyzer/ResumeAnalyzerService.class
 com/paulmorales/resume_analyzer/AIanalysisService.class
 com/paulmorales/resume_analyzer/ResumeController.class
+com/paulmorales/resume_analyzer/ResumeParser.class
 com/paulmorales/resume_analyzer/AiAnalysisController.class
 com/paulmorales/resume_analyzer/AiResumeAnalyzerApplication.class
 com/paulmorales/resume_analyzer/CorsConfig.class
+com/paulmorales/resume_analyzer/AiAnalysisController$AnalysisResult.class
 com/paulmorales/resume_analyzer/CorsConfig$1.class
+com/paulmorales/resume_analyzer/AiAnalysisController$ErrorResponse.class
 com/paulmorales/resume_analyzer/ResumeAnalyzerService$AnalysisResult.class
