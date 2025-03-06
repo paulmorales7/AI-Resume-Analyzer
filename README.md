@@ -4,7 +4,7 @@
 
 
 ## Overview
-The AI Resume Analyzer helps users compare their resumes against job descriptions using AI to provide feedback and compatibility scores.
+The AI Resume Analyzer helps users compare their resumes against job descriptions using AI to provide feedback and compatibility scores. Highlighting any key qualifications the user may be missing. Ultimately assisting the user in formulating the strongest resume possible.
 
 ## Features
 - Upload a resume and extract text.
