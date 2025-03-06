@@ -54,6 +54,9 @@ The AI Resume Analyzer helps users compare their resumes against job description
    ```
 4. Open [http://localhost:3000](http://localhost:3000) in your browser.
 
+5. Ensure the Groq api model being used accepts aleast 40,000+ tokens per call.
+   (https://console.groq.com/docs/rate-limits)
+
 ## API Endpoints
 
 ### Resume Upload
