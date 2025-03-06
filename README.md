@@ -1,5 +1,8 @@
 # AI Resume Analyzer
 
+<img width="955" alt="Screenshot 2025-03-06 at 6 21 12 PM" src="https://github.com/user-attachments/assets/44192371-39b1-4cb3-9fc3-a31754e15c40" />
+
+
 ## Overview
 The AI Resume Analyzer helps users compare their resumes against job descriptions using AI to provide feedback and compatibility scores.
 
