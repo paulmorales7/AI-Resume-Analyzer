@@ -54,17 +54,11 @@ public class ResumeAnalyzerService {
         }
     }
 
-    // Summarizes the job posting to focus on essential skills and qualifications
-    private String summarizeJobPosting(String jobPosting) {
-        String prompt = "Summarize this job posting to focus only on the essential skills, tools, and qualifications, excluding unnecessary details:\n\n" + jobPosting;
-        return callGroqApi(prompt);
-    }
-
     // Extracts relevant sections of the resume
     private String extractRelevantInfo(String resumeText) {
         StringBuilder relevantInfo = new StringBuilder();
 
-        String[] sections = {"summary", "objective", "experience", "education", "skills", "certifications"};
+        String[] sections = {"experience", "skills", "education"};
         for (String section : sections) {
             if (resumeText.toLowerCase().contains(section)) {
                 relevantInfo.append(section.toUpperCase()).append(":\n");
@@ -76,25 +70,16 @@ public class ResumeAnalyzerService {
         return relevantInfo.length() > 0 ? relevantInfo.toString() : resumeText;  // Use full text as fallback
     }
 
-    // Identifies missing requirements
-    public String identifyMissingRequirements(String jobPosting, String resumeText) {
-        String relevantResumeText = extractRelevantInfo(resumeText);
-        String prompt = "Compare this resume to the job posting. Identify missing skills, experience, or qualifications:\n\nJob Posting:\n" 
-                        + jobPosting + "\n\nResume:\n" + relevantResumeText;
-        return callGroqApi(prompt);
-    }
-
     // Analyzes the resume, returns missing requirements and a small feedback paragraph
     public AnalysisResult analyzeResume(String jobPosting, MultipartFile resumeFile) throws IOException {
         String fullResumeText = new String(resumeFile.getBytes(), StandardCharsets.UTF_8);
-        String jobPostingSummary = summarizeJobPosting(jobPosting);  // Summarize job posting to reduce token size
-        String missingRequirements = identifyMissingRequirements(jobPostingSummary, fullResumeText);  // Identify missing requirements
+        String relevantResumeText = extractRelevantInfo(fullResumeText); // Extract only relevant sections
 
         // Provide a small feedback paragraph
-        String feedback = "Based on the analysis, here are the areas where the resume could be improved.";
+        String feedback = callGroqApi("Provide general feedback on this resume:\n\n" + relevantResumeText);
 
-        // Return result with missing requirements and feedback
-        return new AnalysisResult("", missingRequirements, feedback);
+        // Return result with feedback
+        return new AnalysisResult("", "", feedback);
     }
 
     // Holds the analysis result
