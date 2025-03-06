@@ -14,7 +14,7 @@ The AI Resume Analyzer helps users compare their resumes against job description
 ### Core Technologies  
 - **Backend:** Java (Spring Boot 3.4.2)  
 - **Frontend:** React (JavaScript)  
-- **Database:** Not yet implemented 
+- **Database:** SQL
 
 ### Development Tools  
 - **Version Control:** Git, GitHub  
